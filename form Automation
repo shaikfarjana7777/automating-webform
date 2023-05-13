@@ -1,0 +1,70 @@
+from selenium import webdriver
+import time
+import re
+
+url = 'https://docs.google.com/forms/d/e/1FAIpQLSeeDtH2CopdLKOpUYfBGXVLkqb4vLZrGNxxJ09x4oeJUXxMdA/viewform'
+
+test_data = {
+    'name': 'Shaik farzana',
+    'email': 'shaikfarzana3697@gmail.com',
+    'address': 'buchireddy palem,nellore,Andhra Pradesh',
+    'phone': '6310209088',
+    'comment': 'i am very happy to share my contact information'
+}
+
+driver = webdriver.Chrome()
+driver.maximize_window()
+
+driver.get(url)
+
+time.sleep(9)
+
+name_field = driver.find_element("xpath","//*[contains(@aria-labelledby, 'i1')]")
+name_field.send_keys(test_data['name'])
+
+email_field = driver.find_element("xpath","//*[contains(@aria-labelledby,'i5')]")
+email_field.send_keys(test_data['email'])
+
+address_field = driver.find_element("xpath","//*[contains(@aria-labelledby,'i9')]")
+address_field.send_keys(test_data['address'])
+
+phone_field = driver.find_element("xpath","//*[contains(@aria-labelledby,'i13')]")
+phone_field.send_keys(test_data['phone'])
+
+comment_field = driver.find_element("xpath","//*[contains(@aria-labelledby,'i17')]")
+comment_field.send_keys(test_data['comment'])
+
+required_fields = [name_field, email_field]
+for field in required_fields:
+    if not field.get_attribute('value'):
+        print(f'{field.get_attribute("aria-label")} is a required field!')
+        driver.quit()
+        exit(1)
+
+email_pattern = re.compile(r'^[\w\-\.]+@([\w\-]+\.)+[\w]{2,}$')
+if not email_pattern.match(test_data['email']):
+    print('Invalid email address!')
+    driver.quit()
+    exit(1)
+
+submit_button = driver.find_element("xpath","//*[contains(@class,'NPEfkd RveJvd snByac')]")
+submit_button.click()
+
+time.sleep(5)
+
+try:
+    driver.switch_to.window(driver.window_handles[1])
+    driver.close()
+    driver.switch_to.window(driver.window_handles[0])
+except IndexError:
+    pass
+
+success_message = driver.find_element("xpath", "//*[contains(@class,'vHW8K')]")
+print('form succesfully submitted' )
+if not success_message:
+    print('Form submission failed!')
+    driver.quit()
+    exit(1)
+
+driver.quit()
+
